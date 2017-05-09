@@ -9,6 +9,7 @@ using Xunit;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.TestModels;
+using Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.Utilities;
 
 namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
 {
@@ -39,7 +40,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
                 var closeCount = 0;
                 var disposeCount = 0;
 
-                using (var connection = new NpgsqlConnection(store.ConnectionString))
+                using (var connection = ConnectionCreator.CreateConnection("unknown"))
                 {
                     if (openConnection)
                     {

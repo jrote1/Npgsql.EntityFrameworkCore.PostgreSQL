@@ -107,13 +107,8 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
                 .AddEntityFrameworkNpgsql()
                 .BuildServiceProvider();
 
-            var connStrBuilder = new NpgsqlConnectionStringBuilder(TestEnvironment.DefaultConnection)
-            {
-                Database = "StateManagerBug"
-            };
-
             _options = new DbContextOptionsBuilder()
-                .UseNpgsql(connStrBuilder.ConnectionString)
+                .UseNpgsql(ConnectionCreator.CreateConnection( "StateManagerBug" ) )
                 .UseInternalServiceProvider(serviceProvider)
                 .Options;
         }

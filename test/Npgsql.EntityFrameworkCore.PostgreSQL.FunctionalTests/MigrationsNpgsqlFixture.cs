@@ -18,14 +18,9 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
                 .AddEntityFrameworkNpgsql()
                 .BuildServiceProvider();
 
-            var connectionStringBuilder = new NpgsqlConnectionStringBuilder(TestEnvironment.DefaultConnection)
-            {
-                Database = nameof(MigrationsNpgsqlTest)
-            };
-
             _options = new DbContextOptionsBuilder()
                 .UseInternalServiceProvider(serviceProvider)
-                .UseNpgsql(connectionStringBuilder.ConnectionString).Options;
+                .UseNpgsql(ConnectionCreator.CreateConnection( nameof( MigrationsNpgsqlTest ) ) ).Options;
         }
 
         public override MigrationsContext CreateContext() => new MigrationsContext(_options);

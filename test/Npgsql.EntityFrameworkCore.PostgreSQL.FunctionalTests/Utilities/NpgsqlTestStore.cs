@@ -63,8 +63,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.Utilities
 
         NpgsqlTestStore CreateShared(Action initializeDatabase)
         {
-            _connectionString = CreateConnectionString(Name);
-            _connection = new NpgsqlConnection(_connectionString);
+            _connection = ConnectionCreator.CreateConnection( Name );
 
             CreateShared(typeof(NpgsqlTestStore).Name + Name,
                 () =>
@@ -80,7 +79,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.Utilities
 
         bool CreateDatabase()
         {
-            using (var master = new NpgsqlConnection(CreateAdminConnectionString()))
+            using (var master = ConnectionCreator.CreateConnection( "postgres" ) )
             {
                 if (DatabaseExists(Name))
                 {
@@ -115,26 +114,32 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.Utilities
             }
 
             var script = File.ReadAllText(scriptPath);
-            using (var connection = new NpgsqlConnection(CreateConnectionString(databaseName)))
+            using ( var connection = ConnectionCreator.CreateConnection( databaseName ) )
             {
-                Execute(connection, command =>
-                {
-                    foreach (var batch in
-                        new Regex("^GO", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromMilliseconds(1000.0))
-                            .Split(script).Where(b => !string.IsNullOrEmpty(b)))
-                    {
-                        command.CommandText = batch;
-                        command.ExecuteNonQuery();
-                    }
-                    return 0;
-                }, "");
+                Execute( connection, command =>
+                 {
+                     foreach ( var batch in
+                         new Regex( "^GO", RegexOptions.IgnoreCase | RegexOptions.Multiline, TimeSpan.FromMilliseconds( 1000.0 ) )
+                             .Split( script ).Where( b => !string.IsNullOrEmpty( b ) ) )
+                     {
+                         command.CommandText = batch;
+                         try
+                         {
+                             command.ExecuteNonQuery();
+                         }
+                         catch ( Exception ex )
+                         {
+                             
+                         }
+                     }
+                     return 0;
+                 }, "" );
             }
         }
 
         NpgsqlTestStore CreateTransient(bool createDatabase, bool deleteDatabase)
         {
-            _connectionString = CreateConnectionString(Name);
-            _connection = new NpgsqlConnection(_connectionString);
+            _connection = ConnectionCreator.CreateConnection( Name );
 
             if (createDatabase)
             {
@@ -154,11 +159,11 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.Utilities
         static void Clean(string name)
         {
             var options = new DbContextOptionsBuilder()
-                .UseNpgsql(CreateConnectionString(name), b => b.ApplyConfiguration())
+                .UseNpgsql( ConnectionCreator.CreateConnection( name ), b => b.ApplyConfiguration() )
                 .UseInternalServiceProvider(
                     new ServiceCollection()
                         .AddEntityFrameworkNpgsql()
-                        .BuildServiceProvider())
+                        .BuildServiceProvider() )
                 .Options;
 
             using (var context = new DbContext(options))
@@ -172,7 +177,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.Utilities
 
         static bool DatabaseExists(string name)
         {
-            using (var master = new NpgsqlConnection(CreateAdminConnectionString()))
+            using (var master = ConnectionCreator.CreateConnection( "system" ) )
                 return ExecuteScalar<long>(master, $@"SELECT COUNT(*) FROM pg_database WHERE datname = '{name}'") > 0;
         }
 
@@ -180,7 +185,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.Utilities
         {
             if (!DatabaseExists(name))
                 return;
-            using (var master = new NpgsqlConnection(CreateAdminConnectionString()))
+            using (var master = ConnectionCreator.CreateConnection( "system" ) )
             {
                 ExecuteNonQuery(master, GetDisconnectDatabaseSql(name));
                 ExecuteNonQuery(master, GetDropDatabaseSql(name));
@@ -374,7 +379,5 @@ SELECT pg_terminate_backend (pg_stat_activity.pid)
             => new NpgsqlConnectionStringBuilder(TestEnvironment.DefaultConnection) {
                 Database = name
             }.ConnectionString;
-
-        static string CreateAdminConnectionString() => CreateConnectionString("postgres");
     }
 }

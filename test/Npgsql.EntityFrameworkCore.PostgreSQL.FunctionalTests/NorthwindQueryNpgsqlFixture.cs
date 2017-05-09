@@ -36,7 +36,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
                         .AddSingleton<ILoggerFactory>(_testSqlLoggerFactory)
                         .BuildServiceProvider()))
                 .UseNpgsql(
-                    _testStore.ConnectionString,
+                    ConnectionCreator.CreateConnection( _testStore.Name ),
                     b =>
                     {
                         ConfigureOptions(b);

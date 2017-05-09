@@ -1,10 +1,3 @@
-SET statement_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SET check_function_bodies = false;
-SET client_min_messages = warning;
-GO
-
 CREATE TABLE "Employees" (
 	"EmployeeID" SERIAL,
 	"LastName" varchar (20) NOT NULL ,
@@ -57,7 +50,7 @@ GO
 GO
 
 CREATE TABLE "Customers" (
-	"CustomerID" nchar (5) NOT NULL ,
+	"CustomerID" VARCHAR (5) NOT NULL ,
 	"CompanyName" varchar (40) NOT NULL ,
 	"ContactName" varchar (30) NULL ,
 	"ContactTitle" varchar (30) NULL ,
@@ -119,7 +112,7 @@ GO
 
 CREATE TABLE "Orders" (
 	"OrderID" SERIAL ,
-	"CustomerID" nchar (5) NULL ,
+	"CustomerID" VARCHAR (5) NULL ,
 	"EmployeeID" integer NULL ,
 	"OrderDate" timestamp NULL ,
 	"RequiredDate" timestamp NULL ,

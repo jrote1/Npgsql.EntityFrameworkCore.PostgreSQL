@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests.Utilities;
 using Xunit;
 
 namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
@@ -58,7 +59,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
         {
             var serviceProvider
                 = new ServiceCollection()
-                    .AddScoped(p => new NpgsqlConnection(NpgsqlNorthwindContext.ConnectionString))
+                    .AddScoped(p => ConnectionCreator.CreateConnection(NpgsqlNorthwindContext.DatabaseName))
                     .AddDbContext<ConnectionInOnConfiguringContext>().BuildServiceProvider();
 
             using (NpgsqlNorthwindContext.GetSharedStore())
@@ -75,7 +76,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
         {
             using (NpgsqlNorthwindContext.GetSharedStore())
             {
-                using (var context = new ConnectionInOnConfiguringContext(new NpgsqlConnection(NpgsqlNorthwindContext.ConnectionString)))
+                using (var context = new ConnectionInOnConfiguringContext( ConnectionCreator.CreateConnection( NpgsqlNorthwindContext.DatabaseName)))
                 {
                     Assert.True(context.Customers.Any());
                 }
@@ -251,7 +252,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
         {
             var serviceProvider
                 = new ServiceCollection()
-                    .AddScoped(p => new NpgsqlConnection(NpgsqlNorthwindContext.ConnectionString))
+                    .AddScoped(p => ConnectionCreator.CreateConnection( NpgsqlNorthwindContext.DatabaseName))
                     .AddDbContext<OptionsContext>()
                     .BuildServiceProvider();
 
@@ -271,7 +272,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
             {
                 using (var context = new OptionsContext(
                     new DbContextOptions<OptionsContext>(),
-                    new NpgsqlConnection(NpgsqlNorthwindContext.ConnectionString)))
+                    ConnectionCreator.CreateConnection( NpgsqlNorthwindContext.DatabaseName)))
                 {
                     Assert.True(context.Customers.Any());
                 }
@@ -469,7 +470,7 @@ namespace Npgsql.EntityFrameworkCore.PostgreSQL.FunctionalTests
         [Fact]
         public void Can_specify_connection_in_OnConfiguring_and_create_master_connection()
         {
-            using (var conn = new NpgsqlConnection(NpgsqlNorthwindContext.ConnectionString))
+            using (var conn = ConnectionCreator.CreateConnection( NpgsqlNorthwindContext.DatabaseName))
             {
                 conn.Open();
 
